@@ -289,11 +289,12 @@ export const getSuggestions = (
     if (currentValuePredictiveTrimmed) {
       const parsedSuggestion = predictiveSuggestions.reduce(
         (agg, { label, ...rest }) => {
+          let parsedContent = label;
           // to handle special strings with pattern '<mark>xyz</mark> <a href="test'
-          const parsedContent = new DOMParser().parseFromString(
-            label,
-            'text/html'
-          ).documentElement.textContent;
+          if (window.document) {
+            parsedContent = new DOMParser().parseFromString(label, 'text/html')
+              .documentElement.textContent;
+          }
 
           // to match the partial start of word.
           // example if searchTerm is `select` and string contains `selected`

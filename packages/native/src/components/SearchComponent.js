@@ -75,6 +75,7 @@ class SearchComponent extends React.Component {
       maxPopularSuggestions,
       distinctField,
       distinctFieldConfig,
+      enablePredictiveSuggestions
     } = this.props;
     // Register search base component
     context.register(id, {
@@ -128,7 +129,8 @@ class SearchComponent extends React.Component {
       preserveResults,
       maxPopularSuggestions,
       distinctField,
-      distinctFieldConfig
+      distinctFieldConfig,
+      enablePredictiveSuggestions
     });
   }
 
@@ -178,7 +180,8 @@ class SearchComponent extends React.Component {
 SearchComponent.defaultProps = {
   // Triggers the default query on init
   triggerQueryOnInit: true,
-  destroyOnUnmount: true
+  destroyOnUnmount: true,
+  enablePredictiveSuggestions: false
 };
 
 SearchComponent.propTypes = {
@@ -231,6 +234,7 @@ SearchComponent.propTypes = {
   render: func,
   distinctField: string,
   distinctFieldConfig: object,
+  enablePredictiveSuggestions: bool,
   // subscribe on changes,
   subscribeTo: arrayOf(string),
   triggerQueryOnInit: bool,
