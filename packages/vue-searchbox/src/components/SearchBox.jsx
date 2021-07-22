@@ -55,7 +55,7 @@ const SearchBox = {
 		URLParams: VueTypes.bool,
 		// RS API properties
 		id: VueTypes.string.isRequired,
-		value: VueTypes.any,
+		value: VueTypes.string.def('undefined'),
 		type: types.queryTypes,
 		react: types.reactType,
 		queryFormat: types.queryFormat,
@@ -270,6 +270,12 @@ const SearchBox = {
 				componentInstance.triggerCustomQuery();
 			}
 		},
+		isControlled() {
+			if (this.$props.value !== undefined && this.$listeners.change) {
+				return true;
+			}
+			return false;
+		},
 		setValue({ value, isOpen = true, ...rest }) {
 			const { debounce } = this.$props;
 			this.isOpen = isOpen;
@@ -285,7 +291,13 @@ const SearchBox = {
 					minChars: 3
 				});
 			}
-			if (debounce > 0) {
+			if (this.isControlled()) {
+				componentInstance.setValue(value, {
+					triggerDefaultQuery: false,
+					triggerCustomQuery: false
+				});
+				this.$emit('change', value, componentInstance, rest.event);
+			} else if (debounce > 0) {
 				componentInstance.setValue(value, {
 					triggerDefaultQuery: false,
 					triggerCustomQuery: false,
@@ -332,7 +344,7 @@ const SearchBox = {
 		},
 		handleFocus(event) {
 			this.isOpen = true;
-			this.$emit('focus', event);
+			this.withTriggerQuery('focus', event);
 		},
 		handleStateChange(changes) {
 			const { isOpen } = changes;
@@ -349,8 +361,7 @@ const SearchBox = {
 				});
 				this.onValueSelectedHandler(event.target.value, causes.ENTER_PRESS);
 			}
-
-			this.$emit('keyDown', event);
+			this.withTriggerQuery('keyDown', event);
 		},
 		handleMicClick() {
 			const componentInstance = this.getComponentInstance();
@@ -525,7 +536,6 @@ const SearchBox = {
 			) {
 				return;
 			}
-
 			const shortcuts = focusShortcuts.map(key => {
 				if (typeof key === 'string') {
 					return isNumeric(key)
@@ -547,6 +557,9 @@ const SearchBox = {
 			this.focusSearchBox(event);
 			event.stopPropagation();
 			event.preventDefault();
+		},
+		withTriggerQuery(eventName, event) {
+			this.$emit(eventName, this.getComponentInstance(), event);
 		},
 		registerHotkeysListener() {
 			const { focusShortcuts } = this.$props;
@@ -588,6 +601,7 @@ const SearchBox = {
 			});
 		}
 	},
+
 	render() {
 		const {
 			className,
@@ -808,16 +822,16 @@ const SearchBox = {
 														on: getInputEvents({
 															onInput: this.onInputChange,
 															onBlur: e => {
-																this.$emit('blur', e);
+																this.withTriggerQuery('blur', e);
 															},
 															onFocus: this.handleFocus,
 															onKeyPress: e => {
-																this.$emit('keyPress', e);
+																this.withTriggerQuery('keyPress', e);
 															},
 															onKeyDown: e =>
 																this.handleKeyDown(e, highlightedIndex),
 															onKeyUp: e => {
-																this.$emit('keyUp', e);
+																this.withTriggerQuery('keyUp', e);
 															}
 														})
 													}}
